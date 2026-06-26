@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>GitHub Starred At</title>
+    <link rel="stylesheet" href="options.css">
+  </head>
+  <body>
+    <main class="shell">
+      <header class="masthead">
+        <div>
+          <p class="eyebrow">Chrome extension</p>
+          <h1>GitHub Starred At</h1>
+          <p class="lede">Show the exact moment you starred a repository, tucked into a quiet hover tooltip on GitHub.</p>
+        </div>
+        <div class="sync-pill" aria-live="polite">
+          <span id="statusDot" class="status-dot"></span>
+          <span id="status">Not synced</span>
+        </div>
+      </header>
+
+      <section class="panel">
+        <div class="section-heading">
+          <h2>Access</h2>
+          <p>Use a fine-grained personal access token with <strong>Starring: Read-only</strong>.</p>
+        </div>
+
+        <label class="field">
+          <span>GitHub token</span>
+          <input id="token" type="password" autocomplete="off" placeholder="github_pat_...">
+        </label>
+        <p class="hint">
+          Create one in
+          <a href="https://github.com/settings/personal-access-tokens" target="_blank" rel="noreferrer">GitHub personal access tokens</a>.
+        </p>
+
+        <div class="divider"></div>
+
+        <div class="section-heading compact">
+          <h2>Display</h2>
+          <p>Control how the hover tooltip reads on repository pages.</p>
+        </div>
+
+        <label class="field inline">
+          <span>Auto-sync interval</span>
+          <input id="autoSyncHours" type="number" min="1" max="168" step="1">
+          <span>hours</span>
+        </label>
+
+        <div class="checks">
+          <label class="check">
+            <input id="showRelativeTime" type="checkbox">
+            <span>Relative time</span>
+          </label>
+
+          <label class="check">
+            <input id="showAbsoluteDate" type="checkbox">
+            <span>Absolute date</span>
+          </label>
+        </div>
+
+        <div class="actions">
+          <button id="save">Save settings</button>
+          <button id="sync" class="secondary">Sync now</button>
+        </div>
+      </section>
+
+      <section class="status-grid">
+        <div class="metric">
+          <span class="label">Repositories</span>
+          <strong id="repoCount">0</strong>
+        </div>
+        <div class="metric wide">
+          <span class="label">Last sync</span>
+          <strong id="lastSyncedAt">-</strong>
+        </div>
+      </section>
+
+      <p id="message" class="message" aria-live="polite"></p>
+    </main>
+
+    <script src="storage.js"></script>
+    <script src="options.js"></script>
+  </body>
+</html>
