@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "GitHub Starred At",
   "description": "Show the time when you starred a repository on GitHub repository pages.",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "minimum_chrome_version": "114",
   "permissions": ["alarms", "storage"],
   "host_permissions": ["https://github.com/*", "https://api.github.com/*"],
