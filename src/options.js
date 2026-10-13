@@ -29,6 +29,20 @@ saveButton.addEventListener("click", async () => {
 
 syncButton.addEventListener("click", async () => {
   setBusy(true);
+  messageEl.textContent = "Saving settings...";
+
+  const saveResponse = await chrome.runtime.sendMessage({
+    type: "SAVE_OPTIONS",
+    token: tokenInput.value.trim(),
+    options: readOptionsFromForm()
+  });
+
+  if (!saveResponse?.ok) {
+    setBusy(false);
+    messageEl.textContent = "Could not save settings. Sync was not started.";
+    return;
+  }
+
   messageEl.textContent = "Syncing your GitHub starred repositories...";
 
   const response = await chrome.runtime.sendMessage({
