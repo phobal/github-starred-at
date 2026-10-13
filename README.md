@@ -8,6 +8,7 @@ A lightweight Chrome (Manifest V3) extension that surfaces the exact moment you 
 
 - On a repository page, hover the Star button to see when you starred it. The tooltip can show a relative time (e.g. "2 years ago"), an absolute date (e.g. "Jun 26, 2024"), or both.
 - On your [GitHub Stars tab](https://github.com/?tab=stars), a "Starred at" badge is inserted next to each repository's last-updated timestamp.
+- On GitHub's [Trending repositories](https://github.com/trending), a "Starred at" badge appears after the "Built by" authors for repositories you have starred. Hovering the Starred button also shows the time.
 - Syncs your full list of starred repositories in the background and caches it locally, so lookups are instant and the GitHub API is not hit on every page view.
 - Auto-syncs on a configurable interval (default: every 12 hours), and you can trigger a manual sync at any time.
 - All data is stored locally in `chrome.storage.local`. Your token never leaves the extension except for direct calls to the GitHub API.
@@ -37,6 +38,7 @@ A lightweight Chrome (Manifest V3) extension that surfaces the exact moment you 
 5. Click **Sync now** to perform the initial sync. The status pill will show "Synced" once it completes, along with the number of indexed repositories and the last sync time.
 6. Visit any repository page on GitHub and hover the Star button — the "Starred at" tooltip will appear.
 7. Visit `https://github.com/?tab=stars` to see the "Starred at" badge next to each repo on your stars list.
+8. Visit `https://github.com/trending` to see the badge after the "Built by" authors for trending repositories you have starred. Hover over a repository's **Starred** button to see its time in a tooltip.
 
 The extension also reacts to GitHub's client-side navigation, so switching between repositories without a full page reload still updates the tooltip.
 

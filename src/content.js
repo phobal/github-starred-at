@@ -3,6 +3,7 @@ const WRAPPER_CLASS = "github-starred-at-wrapper";
 const LIST_BADGE_CLASS = "github-starred-at-list-badge";
 const MARKER_ATTRIBUTE = "data-github-starred-at-added";
 const LIST_MARKER_ATTRIBUTE = "data-github-starred-at-list-added";
+const TRENDING_MARKER_ATTRIBUTE = "data-github-starred-at-trending-added";
 
 let currentUrl = location.href;
 let observer = null;
@@ -37,12 +38,59 @@ function observeDomChanges() {
 }
 
 async function renderWhenPossible() {
+  if (isTrendingPage()) {
+    await renderTrendingPage();
+    return;
+  }
+
   if (isStarsListPage()) {
     await renderStarsListPage();
     return;
   }
 
   await renderRepositoryPage();
+}
+
+async function renderTrendingPage() {
+  const repositories = findTrendingRepositories();
+  const pendingRepositories = repositories.filter(({ container }) => (
+    !container.hasAttribute(TRENDING_MARKER_ATTRIBUTE)
+  ));
+  if (pendingRepositories.length === 0) return;
+
+  for (const { container } of pendingRepositories) {
+    container.setAttribute(TRENDING_MARKER_ATTRIBUTE, "true");
+  }
+
+  const response = await chrome.runtime.sendMessage({
+    type: "GET_STARRED_AT_BATCH",
+    fullNames: [...new Set(pendingRepositories.map(({ fullName }) => fullName))]
+  });
+
+  if (!response?.ok) {
+    for (const { container } of pendingRepositories) {
+      container.removeAttribute(TRENDING_MARKER_ATTRIBUTE);
+    }
+    return;
+  }
+
+  for (const { fullName, container } of pendingRepositories) {
+    const starredAt = response.starredAtByFullName?.[fullName];
+    if (!starredAt) continue;
+
+    if (!container.querySelector(`.${LIST_BADGE_CLASS}`)) {
+      const builtByGroup = findTrendingBuiltByGroup(container);
+      if (builtByGroup) {
+        builtByGroup.insertAdjacentElement("afterend", createListBadge(starredAt, response.options || {}));
+      }
+    }
+
+    const starButton = findTrendingStarButton(container);
+    if (starButton && !starButton.hasAttribute(MARKER_ATTRIBUTE) && isRepositoryStarred(starButton)) {
+      starButton.setAttribute(MARKER_ATTRIBUTE, "true");
+      attachTooltip(starButton, starredAt, response.options || {});
+    }
+  }
 }
 
 async function renderRepositoryPage() {
@@ -102,6 +150,49 @@ async function renderStarsListPage() {
 
 function isStarsListPage() {
   return new URLSearchParams(location.search).get("tab") === "stars";
+}
+
+function isTrendingPage() {
+  return /^\/trending(?:\/|$)/.test(location.pathname);
+}
+
+function findTrendingRepositories() {
+  const cards = document.querySelectorAll("article.Box-row, .Box-row");
+  const repositories = [];
+  const seen = new Set();
+
+  for (const container of cards) {
+    const anchor = findRepositoryTitleAnchor(container);
+    if (!anchor) continue;
+
+    const fullName = getFullNameFromAnchor(anchor);
+    if (!fullName || seen.has(fullName)) continue;
+
+    seen.add(fullName);
+    repositories.push({ fullName, container });
+  }
+
+  return repositories;
+}
+
+function findTrendingBuiltByGroup(container) {
+  const groups = [...container.querySelectorAll("span, p, div")].filter((element) => {
+    return /^Built by\b/i.test(element.textContent.trim()) && element.querySelector("a[href]");
+  });
+
+  return groups.sort((left, right) => (
+    left.querySelectorAll("*").length - right.querySelectorAll("*").length
+  ))[0] || null;
+}
+
+function findTrendingStarButton(container) {
+  const candidate = container.querySelector([
+    "form[action$='/unstar'] button",
+    "[aria-label*='unstar this repository' i]",
+    "[data-testid='star-button']"
+  ].join(", "));
+
+  return candidate?.closest("button") || candidate || null;
 }
 
 function findStarsListRepositories() {
@@ -286,6 +377,10 @@ function removeExistingBadges() {
 
   for (const element of document.querySelectorAll(`[${LIST_MARKER_ATTRIBUTE}]`)) {
     element.removeAttribute(LIST_MARKER_ATTRIBUTE);
+  }
+
+  for (const element of document.querySelectorAll(`[${TRENDING_MARKER_ATTRIBUTE}]`)) {
+    element.removeAttribute(TRENDING_MARKER_ATTRIBUTE);
   }
 }
 
